@@ -1,0 +1,5 @@
+{
+  "name": "AI Fact Sheet Generator",
+  "description": "An application that uses Gemini with Google Search to generate a summarized fact sheet about any public figure. Enter a name to get a detailed summary including connections, education, awards, and key facts, with a feature to download the report as a PDF.",
+  "requestFramePermissions": []
+}
