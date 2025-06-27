@@ -94,6 +94,10 @@ export const generateFactSheet = async (personName: string): Promise<{ data: Fac
       },
     });
 
+    if (!response.text) {
+        throw new Error("The AI returned an empty response. Please try again.");
+    }
+
     const data = parseJsonResponse(response.text);
     const sources = (response.candidates?.[0]?.groundingMetadata?.groundingChunks as GroundingSource[]) || [];
 
