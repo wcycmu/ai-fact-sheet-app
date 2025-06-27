@@ -5,24 +5,6 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Fact Sheet Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'brand-primary': '#4f46e5',
-              'brand-secondary': '#7c3aed',
-              'base-100': '#1f2937',
-              'base-200': '#374151',
-              'base-300': '#4b5563',
-              'content-100': '#d1d5db',
-              'content-200': '#9ca3af',
-            },
-          },
-        },
-      }
-    </script>
   <script type="importmap">
 {
   "imports": {
@@ -31,7 +13,9 @@
     "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
     "@google/genai": "https://esm.sh/@google/genai@^1.7.0",
     "jspdf": "https://esm.sh/jspdf@2.5.1",
-    "html2canvas": "https://esm.sh/html2canvas@1.4.1"
+    "html2canvas": "https://esm.sh/html2canvas@1.4.1",
+    "vite": "https://esm.sh/vite@^7.0.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^4.6.0"
   }
 }
 </script>
@@ -39,6 +23,7 @@
 </head>
   <body class="bg-base-100">
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+    <script type="module" src="/src/main.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
+</body>
 </html>

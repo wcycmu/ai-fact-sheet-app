@@ -1,12 +1,15 @@
-
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import type { FactSheetData, GroundingSource } from '../types';
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
+// This is the Vite-native way to access environment variables.
+// Vercel will populate this variable from your project settings.
+const apiKey = import.meta.env.VITE_API_KEY;
+
+if (!apiKey) {
+    throw new Error("VITE_API_KEY environment variable not set. Please add it to your Vercel project settings.");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey });
 
 const parseJsonResponse = (jsonStr: string): FactSheetData => {
   let cleanJsonStr = jsonStr.trim();
@@ -16,14 +19,12 @@ const parseJsonResponse = (jsonStr: string): FactSheetData => {
     cleanJsonStr = match[2].trim();
   }
 
-  // Attempt to fix common JSON errors like trailing commas, which LLMs sometimes produce.
   const repairedJson = cleanJsonStr
-    .replace(/,(?=\s*?\])/g, '') // Remove trailing commas in arrays
-    .replace(/,(?=\s*?})/g, ''); // Remove trailing commas in objects
+    .replace(/,(?=\s*?\])/g, '')
+    .replace(/,(?=\s*?})/g, '');
 
   try {
     const parsedData = JSON.parse(repairedJson);
-    // Basic validation to ensure the parsed object has the expected structure
     if (
       !parsedData.person_name ||
       !Array.isArray(parsedData.primary_connections) ||
@@ -75,13 +76,10 @@ export const generateFactSheet = async (personName: string): Promise<{ data: Fac
     console.error("Error in generateFactSheet:", error);
     if (error instanceof Error) {
         if (error.message.includes('API key not valid')) {
-            throw new Error("The configured API key is invalid. Please check your setup.");
+            throw new Error("The configured API key is invalid. Please check your Vercel project settings.");
         }
-        // Re-throw the original error (e.g., from parseJsonResponse)
-        // so the UI gets the specific message.
         throw error;
     }
-    // Fallback for non-Error objects being thrown
     throw new Error("An unexpected error occurred while communicating with the AI.");
   }
 };
