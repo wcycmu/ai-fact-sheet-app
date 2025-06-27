@@ -1,8 +1,6 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import type { FactSheetData, GroundingSource } from '../types';
 
-// This is the Vite-native way to access environment variables.
-// Vercel will populate this variable from your project settings.
 const apiKey = import.meta.env.VITE_API_KEY;
 
 if (!apiKey) {
@@ -11,17 +9,45 @@ if (!apiKey) {
 
 const ai = new GoogleGenAI({ apiKey });
 
-const parseJsonResponse = (jsonStr: string): FactSheetData => {
-  let cleanJsonStr = jsonStr.trim();
-  const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
-  const match = cleanJsonStr.match(fenceRegex);
-  if (match && match[2]) {
-    cleanJsonStr = match[2].trim();
+const extractFirstJson = (text: string): string => {
+  // First, try to find JSON within markdown code fences
+  const fenceRegex = /```(?:json)?\s*\n({[\s\S]*?})\n?\s*```/s;
+  const match = text.match(fenceRegex);
+  if (match && match[1]) {
+    return match[1];
   }
 
-  const repairedJson = cleanJsonStr
-    .replace(/,(?=\s*?\])/g, '')
-    .replace(/,(?=\s*?})/g, '');
+  // If no fences, find the first complete JSON object by balancing braces
+  let braceCount = 0;
+  let startIndex = -1;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '{') {
+      if (braceCount === 0) {
+        startIndex = i;
+      }
+      braceCount++;
+    } else if (text[i] === '}') {
+      if (braceCount > 0) {
+        braceCount--;
+        if (braceCount === 0 && startIndex !== -1) {
+          return text.substring(startIndex, i + 1);
+        }
+      }
+    }
+  }
+  
+  // Return the original text if no object is found, to let the parser handle it
+  return text;
+};
+
+
+const parseJsonResponse = (jsonStr: string): FactSheetData => {
+  const isolatedJson = extractFirstJson(jsonStr.trim());
+  
+  // Attempt to fix common JSON errors like trailing commas
+  const repairedJson = isolatedJson
+    .replace(/,(?=\s*?\])/g, '') // Remove trailing commas in arrays
+    .replace(/,(?=\s*?})/g, ''); // Remove trailing commas in objects
 
   try {
     const parsedData = JSON.parse(repairedJson);
@@ -44,7 +70,7 @@ const parseJsonResponse = (jsonStr: string): FactSheetData => {
 
 export const generateFactSheet = async (personName: string): Promise<{ data: FactSheetData; sources: GroundingSource[] }> => {
   const systemInstruction = `You are an expert research assistant. Your task is to find information about a person using the provided search tools and generate a structured fact sheet about them.
-  The output MUST be a single, strictly valid JSON object. Ensure the JSON is syntactically correct and does not contain trailing commas.
+  The output MUST be a single, strictly valid JSON object. Ensure the JSON is syntactically correct, contains no comments, and does not have trailing commas.
   The structure must be as follows:
   {
     "person_name": "Full Name of the Person",

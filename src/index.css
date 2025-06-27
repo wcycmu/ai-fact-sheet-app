@@ -1,3 +1,30 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  @apply bg-base-100 text-content-100;
+}
+
+/* Print mode for PDF generation with a guaranteed white background */
+.print-mode {
+  @apply bg-white text-gray-900;
+}
+.print-mode h2, .print-mode h3, .print-mode li, .print-mode p {
+  @apply text-gray-900;
+}
+.print-mode .text-brand-secondary {
+    @apply text-violet-600;
+}
+.print-mode .grid {
+  display: block !important; /* Force single column for PDF */
+}
+.print-mode a {
+    @apply text-blue-600;
+}
+.print-mode [class*="bg-"] {
+    @apply bg-white shadow-none border border-gray-200;
+}
+.print-mode .source-link {
+    @apply bg-gray-100;
+}
